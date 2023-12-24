@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { FaSearch } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import css from './searchbar.module.css';
+import { SelectPerPage } from 'components/SelectPerPage/SelectPerPage';
 
-export const Searchbar = ({ handleSearchText, searchText }) => {
+export const Searchbar = ({ handleSearchText, searchText, changePerPage }) => {
   const [value, setValue] = useState('');
   const pages = 1;
 
@@ -13,10 +14,10 @@ export const Searchbar = ({ handleSearchText, searchText }) => {
     if (!cleanValue) {
       Swal.fire({
         title: 'Oops...',
-        text: "Seems like your search term got lost in the keyboard jungle! Let's try to find it again.",
+        text: 'Please write what you want to find',
         icon: 'question',
         backdrop: true,
-        confirmButtonText: 'Back to the Search Safari!',
+        confirmButtonText: 'Back to the Search!',
       });
       handleSearchText(cleanValue, pages);
       setValue('');
@@ -25,10 +26,10 @@ export const Searchbar = ({ handleSearchText, searchText }) => {
     if (searchText === cleanValue) {
       Swal.fire({
         title: 'Deja Vu!',
-        text: "Looks like you've already searched this! Are you testing your keyboard or just really love these results?",
+        text: "Looks like you've already searched this!",
         icon: 'warning',
         backdrop: true,
-        confirmButtonText: 'Search Again Anyway',
+        confirmButtonText: 'Search Again',
       });
       setValue('');
       return;
@@ -62,6 +63,7 @@ export const Searchbar = ({ handleSearchText, searchText }) => {
           value={value}
         />
       </form>
+      <SelectPerPage changePerPage={changePerPage} />
     </header>
   );
 };

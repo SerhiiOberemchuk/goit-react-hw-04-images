@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '../Button/Button';
 import { ImageGallery } from '../ImageGallery/ImageGallery';
 import { Searchbar } from '../Searchbar/Searchbar';
@@ -16,8 +16,7 @@ export const App = () => {
   const [isModal, setIsModal] = useState(false);
   const [imageURL, setImageURL] = useState('');
   const [loadMore, setLoadMore] = useState(false);
-  // const [per_page, setPer_page] = useState(12);
-  const per_page = 12;
+  const per_page = useRef(12);
 
   useEffect(() => {
     function fetchImages() {
@@ -27,19 +26,22 @@ export const App = () => {
         return;
       }
 
-      fetchGalleryItems(searchText, pages, per_page)
+      fetchGalleryItems(searchText, pages, per_page.current)
         .then(response => {
           if (!response.data.hits.length) {
+            setImages([]);
             Swal.fire({
               title: 'Hmm...',
-              text: "If you don't know what you want, I'm not sure what to show you!",
+              text: 'I do not have an answer to this request',
               icon: 'question',
               backdrop: true,
               confirmButtonText: 'Try again?',
             });
           } else {
             setImages(prevState => [...prevState, ...response.data.hits]);
-            setLoadMore(pages < Math.ceil(response.data.totalHits / per_page));
+            setLoadMore(
+              pages < Math.ceil(response.data.totalHits / per_page.current)
+            );
           }
         })
         .catch(error => {
@@ -58,7 +60,7 @@ export const App = () => {
       setIsLoading(true);
       fetchImages();
     }
-  }, [pages, searchText, per_page]);
+  }, [pages, searchText]);
 
   const handleSearchText = (searchText, pages) => {
     setSearchText(searchText);
@@ -74,15 +76,25 @@ export const App = () => {
     setIsModal(true);
   };
   const handleCloseModal = () => {
+    setImageURL('');
     setIsModal(false);
+  };
+  const changePerPage = value => {
+    per_page.current = value;
   };
 
   return (
     <div className={css.App}>
-      <Searchbar handleSearchText={handleSearchText} searchText={searchText} />
+      <Searchbar
+        handleSearchText={handleSearchText}
+        searchText={searchText}
+        changePerPage={changePerPage}
+      />
       <ImageGallery images={images} openModal={openModal} />
       {isLoading && <Loader />}
-      {loadMore && <Button handleNextPage={handleNextPage} />}
+      {loadMore && images.length > 0 && !isLoading && (
+        <Button handleNextPage={handleNextPage} />
+      )}
       {isModal && (
         <Modal imageURL={imageURL} handleCloseModal={handleCloseModal} />
       )}
